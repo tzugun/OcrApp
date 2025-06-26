@@ -1,0 +1,30 @@
+name: Build Android APK
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install system deps
+        run: |
+          sudo apt update
+          sudo apt install -y python3-pip openjdk-11-jdk zlib1g-dev \
+            libncurses5:i386 libstdc++6:i386 libffi-dev liblzma-dev \
+            build-essential git
+          pip3 install --upgrade buildozer
+
+      - name: Build with Buildozer
+        run: |
+          buildozer -v android debug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: qrlogger-apk
+          path: bin/*.apk
