@@ -14,9 +14,12 @@ jobs:
       - name: Install system deps
         run: |
           sudo apt update
-          sudo apt install -y python3-pip openjdk-11-jdk zlib1g-dev \
-            libncurses5:i386 libstdc++6:i386 libffi-dev liblzma-dev \
-            build-essential git
+          sudo apt install -y \
+            python3-pip \
+            openjdk-11-jdk \
+            git zip unzip \
+            zlib1g-dev libncurses5-dev libstdc++6 libffi-dev liblzma-dev \
+            build-essential
           pip3 install --upgrade buildozer
 
       - name: Build with Buildozer
