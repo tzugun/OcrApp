@@ -4,6 +4,11 @@ on:
   push:
     branches: [ main ]
 
+env:
+  # Tell Buildozer where we put the SDK
+  ANDROID_SDK_ROOT: $HOME/android-sdk
+  ANDROID_HOME:      $HOME/android-sdk
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -24,13 +29,33 @@ jobs:
             build-essential wget
           pip3 install --upgrade buildozer cython
 
-      - name: Build with Buildozer (full debug output)
+      - name: Install Android SDK tools & Build-Tools 30.0.2
         run: |
-          # Use the system Ant installation
+          # Fetch and unpack cmdline-tools
+          mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
+          wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O clt.zip
+          unzip clt.zip -d $ANDROID_SDK_ROOT/cmdline-tools
+          mv $ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools $ANDROID_SDK_ROOT/cmdline-tools/latest
+
+          # Export into PATH so sdkmanager is visible
+          export PATH=$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$PATH
+
+          # Install only the SDK pieces we need
+          yes | sdkmanager --sdk_root=$ANDROID_SDK_ROOT \
+            "platform-tools" \
+            "platforms;android-31" \
+            "build-tools;30.0.2"
+
+          # Accept all licenses
+          yes | sdkmanager --sdk_root=$ANDROID_SDK_ROOT --licenses
+
+      - name: Build with Buildozer (full debug)
+        run: |
+          # Point Buildozer at our SDK & Ant
+          export ANDROID_HOME=$ANDROID_SDK_ROOT
           export ANT_HOME=/usr/share/ant
           export PATH=$ANT_HOME/bin:$PATH
 
-          # Run Buildozer at max verbosity to expose any errors
           buildozer --verbose --log-level=2 android debug
 
       - name: Upload APK
