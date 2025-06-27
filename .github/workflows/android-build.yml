@@ -24,14 +24,14 @@ jobs:
             build-essential wget
           pip3 install --upgrade buildozer cython
 
-      - name: Build with Buildozer (auto-accept prompts & use system Ant)
+      - name: Build with Buildozer (full debug output)
         run: |
-          # Point Buildozer at the system Ant installation
+          # Use the system Ant installation
           export ANT_HOME=/usr/share/ant
           export PATH=$ANT_HOME/bin:$PATH
 
-          # Now run Buildozer (yes → auto-accept SDK/NDK licenses)
-          yes | buildozer -v android debug
+          # Run Buildozer at max verbosity to expose any errors
+          buildozer --verbose --log-level=2 android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
