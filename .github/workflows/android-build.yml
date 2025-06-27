@@ -7,11 +7,14 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      ANDROID_SDK_ROOT: ${{ runner.home }}/android-sdk
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install system deps
+      - name: Install system deps & Buildozer/Cython
         run: |
           sudo apt update
           sudo apt install -y \
@@ -19,8 +22,24 @@ jobs:
             openjdk-11-jdk \
             git zip unzip \
             zlib1g-dev libncurses5-dev libstdc++6 libffi-dev liblzma-dev \
-            build-essential
+            build-essential wget
           pip3 install --upgrade buildozer cython
+
+      - name: Install Android SDK tools & accept licenses
+        run: |
+          mkdir -p $ANDROID_SDK_ROOT/cmdline-tools
+          wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O cmdline-tools.zip
+          unzip cmdline-tools.zip -d $ANDROID_SDK_ROOT/cmdline-tools
+          # Put the cmdline-tools folder in the path expected by SDK manager
+          mv $ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools $ANDROID_SDK_ROOT/cmdline-tools/latest
+          # Install platform-tools, build-tools 36.0.0 and Android 31
+          yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager \
+            --sdk_root=$ANDROID_SDK_ROOT \
+            "platform-tools" \
+            "platforms;android-31" \
+            "build-tools;36.0.0"
+          # Accept all licenses
+          yes | $ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager --sdk_root=$ANDROID_SDK_ROOT --licenses
 
       - name: Build with Buildozer
         run: |
