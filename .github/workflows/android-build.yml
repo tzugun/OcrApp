@@ -20,7 +20,7 @@ jobs:
             git zip unzip \
             zlib1g-dev libncurses5-dev libstdc++6 libffi-dev liblzma-dev \
             build-essential
-          pip3 install --upgrade buildozer
+          pip3 install --upgrade buildozer cython
 
       - name: Build with Buildozer
         run: |
